@@ -97,3 +97,9 @@ The advantage to this method is that we can more easily scale the consumers to t
 This sadly doesn't work out of the box since processing messages usually happens real time, but we need them to only be processed on a certain day/schedule which would require some sort of intermediary service, like the one described here for example https://medium.com/@fkarakas/kafka-message-scheduler-69823cc62f8c#:~:text=A%20schedule%20is%20just%20a,specific%20headers%20and%20a%20payload.&text=The%20scheduler%20reads%20the%20topic,planned%20for%20the%20current%20day.
 
 2) Using a recurring job that will start running on the first day of the month and will process all the invoices that are due to be paid. This approach is the one I decided to go with since it's simpler and it doesn't require any external service to be running and fits in the time available for the challenge.
+
+Observations:
+
+- Ideally the invoices should be country and currency based as you can have cases where you need to use a different payment provider for different countries (for example in Serbia you can't have the money leave the country)
+and countries can change currency(f.ex. Croatia at the end of this year). Decided to ignore this for now, in order to save a bit of time.
+- Because there can be some error cases that can't be treated automatically, such as missing customer, wrong currency etc. decided to add a FAILED invoice status, which will then have to be treated manually.
