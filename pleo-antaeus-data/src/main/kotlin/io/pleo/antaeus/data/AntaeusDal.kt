@@ -74,6 +74,7 @@ class AntaeusDal(private val db: Database, private val maxRetry: Int = 3) {
                     it[this.currency] = amount.currency.toString()
                     it[this.status] = status.toString()
                     it[this.customerId] = customer.id
+                    it[this.retryCount] = 0
                 } get InvoiceTable.id
         }
 

@@ -66,7 +66,7 @@ fun main() {
     // This should be created via a configuration file or something similar, doing it like this as somewhat of a mock
     // in order to save a bit of time
     val currencyToBillingService = Currency.values().map {
-        BillingService(paymentProvider = paymentProvider, invoiceService = invoiceService, currency = Currency.EUR)
+        BillingService(paymentProvider = paymentProvider, invoiceService = invoiceService, currency = it)
     }.groupBy { it.currency }.mapValues { it.value.first() }
 
     val scheduler = InvoiceBillingScheduler(billingServicesToCurrency = currencyToBillingService)

@@ -25,6 +25,7 @@ class BillingService(
         runBlocking {
             // fixme: this should be done in a transaction, as we're reading invoices and then updating them
             // using flatmapmerge to run the payment in parallel up to the concurrency level
+            logger.info { "Starting billing for $currency" }
             invoiceService.fetchPendingInvoicesByCurrency(currency).asFlow().flatMapMerge(concurrency = 5) {
                 flow {
                     processInvoice(it)
@@ -32,6 +33,7 @@ class BillingService(
                 }
             }
                 .collect()
+            logger.info { "Finished billing for $currency" }
         }
     }
 
@@ -40,21 +42,23 @@ class BillingService(
             try {
                 val result = paymentProvider.charge(invoice)
                 if (result) {
+                    logger.info { "Invoice ${invoice.id} charged successfully" }
                     invoiceService.markInvoiceAsPaid(invoice.id)
                 } else {
+                    logger.info { "Invoice ${invoice.id} failed to charge" }
                     invoiceService.markInvoiceAsFailed(invoice.id)
                 }
             } catch (e: CurrencyMismatchException) {
-                logger.error { "Invoice doesn't have the same currency as the one expected by the payment provider" }
+                logger.error(e) { "Invoice doesn't have the same currency as the one expected by the payment provider" }
                 invoiceService.markInvoiceAsFailed(invoice.id)
             } catch (e: CustomerNotFoundException) {
-                logger.error { "Customer not found for invoice ${invoice.id}" }
+                logger.error(e) { "Customer not found for invoice ${invoice.id}" }
                 invoiceService.markInvoiceAsFailed(invoice.id)
             } catch (e: NetworkException) {
-                logger.error { "Network error when trying to charge invoice ${invoice.id}" }
+                logger.error(e) { "Network error when trying to charge invoice ${invoice.id}" }
                 invoiceService.markInvoiceAsRetryable(invoice.id)
             } catch (e: Exception) {
-                logger.error { "Unexpected exception while trying to charge invoice ${invoice.id}" }
+                logger.error(e) { "Unexpected exception while trying to charge invoice ${invoice.id}" }
                 invoiceService.markInvoiceAsFailed(invoice.id)
             }
         }
