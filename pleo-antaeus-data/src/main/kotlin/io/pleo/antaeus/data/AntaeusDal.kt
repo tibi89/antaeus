@@ -13,10 +13,13 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 class AntaeusDal(private val db: Database) {
     fun fetchInvoice(id: Int): Invoice? {
@@ -35,6 +38,29 @@ class AntaeusDal(private val db: Database) {
             InvoiceTable
                 .selectAll()
                 .map { it.toInvoice() }
+        }
+    }
+
+    fun fetchInvoicesByCurrency(currency: Currency): List<Invoice> {
+        return transaction(db) {
+            InvoiceTable
+                .select { InvoiceTable.currency.eq(currency.name) }
+                .map { it.toInvoice() }
+        }
+    }
+
+    fun updateStatusOfInvoice(id: Int, status: InvoiceStatus): Int {
+        return InvoiceTable.update({ InvoiceTable.id eq id }) {
+            it[InvoiceTable.status] = status.name
+        }
+    }
+
+    fun makeInvoiceAsRetryable(id: Int): Int {
+        return InvoiceTable.update({ InvoiceTable.id eq id }) {
+            with(SqlExpressionBuilder) {
+                it.update(InvoiceTable.retryCount, InvoiceTable.retryCount + 1)
+                it[InvoiceTable.status] = InvoiceStatus.PENDING.name
+            }
         }
     }
 

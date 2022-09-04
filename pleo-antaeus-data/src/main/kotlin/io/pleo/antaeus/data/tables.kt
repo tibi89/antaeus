@@ -13,6 +13,7 @@ object InvoiceTable : Table() {
     val value = decimal("value", 1000, 2)
     val customerId = reference("customer_id", CustomerTable.id)
     val status = text("status")
+    val retryCount = integer("retry_count")
 }
 
 object CustomerTable : Table() {
