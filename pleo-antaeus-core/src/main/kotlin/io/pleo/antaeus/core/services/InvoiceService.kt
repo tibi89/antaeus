@@ -19,8 +19,8 @@ class InvoiceService(private val dal: AntaeusDal) {
         return dal.fetchInvoice(id) ?: throw InvoiceNotFoundException(id)
     }
 
-    fun fetchInvoicesByCurrency(currency: Currency): List<Invoice> {
-        return dal.fetchInvoicesByCurrency(currency)
+    fun fetchPendingInvoicesByCurrency(currency: Currency, limit: Int = 100): List<Invoice> {
+        return dal.fetchPendingInvoicesByCurrency(currency, limit)
     }
 
     fun markInvoiceAsPaid(id: Int) =

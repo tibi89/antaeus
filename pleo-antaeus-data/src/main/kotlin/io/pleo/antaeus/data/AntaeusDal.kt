@@ -14,14 +14,14 @@ import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
-class AntaeusDal(private val db: Database) {
+class AntaeusDal(private val db: Database, private val maxRetry: Int = 3) {
     fun fetchInvoice(id: Int): Invoice? {
         // transaction(db) runs the internal query as a new database transaction.
         return transaction(db) {
@@ -41,10 +41,11 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    fun fetchInvoicesByCurrency(currency: Currency): List<Invoice> {
+    fun fetchPendingInvoicesByCurrency(currency: Currency, limit: Int = 100): List<Invoice> {
         return transaction(db) {
             InvoiceTable
-                .select { InvoiceTable.currency.eq(currency.name) }
+                .select { (InvoiceTable.currency eq currency.name) and (InvoiceTable.status eq InvoiceStatus.PENDING.name) and (InvoiceTable.retryCount less maxRetry) }
+                .limit(limit)
                 .map { it.toInvoice() }
         }
     }

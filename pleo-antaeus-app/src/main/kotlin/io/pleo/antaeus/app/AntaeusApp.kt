@@ -8,12 +8,14 @@
 package io.pleo.antaeus.app
 
 import getPaymentProvider
+import io.pleo.antaeus.core.scheduler.InvoiceBillingScheduler
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
+import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.rest.AntaeusRest
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -61,7 +63,14 @@ fun main() {
     val customerService = CustomerService(dal = dal)
 
     // This is _your_ billing service to be included where you see fit
-    val billingService = BillingService(paymentProvider = paymentProvider)
+    // This should be created via a configuration file or something similar, doing it like this as somewhat of a mock
+    // in order to save a bit of time
+    val currencyToBillingService = Currency.values().map {
+        BillingService(paymentProvider = paymentProvider, invoiceService = invoiceService, currency = Currency.EUR)
+    }.groupBy { it.currency }.mapValues { it.value.first() }
+
+    val scheduler = InvoiceBillingScheduler(billingServicesToCurrency = currencyToBillingService)
+    scheduler.run()
 
     // Create REST web service
     AntaeusRest(
