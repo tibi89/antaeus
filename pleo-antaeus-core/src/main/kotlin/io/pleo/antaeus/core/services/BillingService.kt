@@ -7,6 +7,7 @@ import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Currency
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
+import kotlin.math.log
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
@@ -34,6 +35,9 @@ class BillingService(
                 } catch (e: NetworkException) {
                     logger.error { "Network error when trying to charge invoice ${it.id}" }
                     invoiceService.markInvoiceAsRetryable(it.id)
+                } catch (e: Exception) {
+                    logger.error { "Unexpected exception while trying to charge invoice ${it.id}" }
+                    invoiceService.markInvoiceAsFailed(it.id)
                 }
             }
         }
