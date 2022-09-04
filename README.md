@@ -86,3 +86,14 @@ The code given is structured as follows. Feel free however to modify the structu
 * [Sqlite3](https://sqlite.org/index.html) - Database storage engine
 
 Happy hacking 😁!
+
+
+### My solution
+
+At a first look at the challenge the main problem to solve here is how we schedule the payments, doing a bit of research online think we can have 2 approaches to solve this problem:
+
+1) Using some sort of async messages queue, like Kafka, RabbitMQ, etc. This approach will basically require that on invoice creation we will need to send a message to the queue this should be processed at a certain time and then once everything is fine then the consumer would need to reschedule it if the payment fails.
+The advantage to this method is that we can more easily scale the consumers to the messages/invoices. The disadvantage is that this solution is a lot more complicated and requires a more infrastructure to be setup.
+This sadly doesn't work out of the box since processing messages usually happens real time, but we need them to only be processed on a certain day/schedule which would require some sort of intermediary service, like the one described here for example https://medium.com/@fkarakas/kafka-message-scheduler-69823cc62f8c#:~:text=A%20schedule%20is%20just%20a,specific%20headers%20and%20a%20payload.&text=The%20scheduler%20reads%20the%20topic,planned%20for%20the%20current%20day.
+
+2) Using a recurring job that will start running on the first day of the month and will process all the invoices that are due to be paid. This approach is the one I decided to go with since it's simpler and it doesn't require any external service to be running and fits in the time available for the challenge.
