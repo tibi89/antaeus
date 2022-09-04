@@ -14,6 +14,7 @@ class InvoiceBillingScheduler(
 
     fun run() {
         logger.info { "Starting invoice billing scheduler" }
+        // setting up a recurring task for each currency to more quickly charge each invoice
         billingServicesToCurrency.forEach { (currency, billingService) ->
             scheduleRecurringTask(currency, billingService)
         }
@@ -26,6 +27,7 @@ class InvoiceBillingScheduler(
             // doing it like this since we want to run it multiple times
             // per day, but only on the first and second day of the month, which is not possible with the scheduler
             if (!shouldRun()) {
+                logger.info { "Not running today for currency ${currency.name}" }
                 return@timer
             }
             try {
@@ -37,6 +39,8 @@ class InvoiceBillingScheduler(
     }
 
     private fun shouldRun(): Boolean {
+        // fixme: If the billing is done in multiple countries with multiple timezones,
+        // then this might have some small issues, as it takes the timezone of the server
         val dayOfMonth = LocalDate.now().dayOfMonth
         return dayOfMonth == 1 || dayOfMonth == 2
     }
