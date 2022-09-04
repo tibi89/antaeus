@@ -14,6 +14,10 @@ object InvoiceTable : Table() {
     val customerId = reference("customer_id", CustomerTable.id)
     val status = text("status")
     val retryCount = integer("retry_count")
+
+    init {
+        index(false, status, currency)
+    }
 }
 
 object CustomerTable : Table() {
