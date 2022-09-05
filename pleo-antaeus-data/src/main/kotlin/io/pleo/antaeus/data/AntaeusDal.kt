@@ -51,16 +51,20 @@ class AntaeusDal(private val db: Database, private val maxRetry: Int = 3) {
     }
 
     fun updateStatusOfInvoice(id: Int, status: InvoiceStatus): Int {
-        return InvoiceTable.update({ InvoiceTable.id eq id }) {
-            it[InvoiceTable.status] = status.name
+        return transaction(db) {
+            InvoiceTable.update({ InvoiceTable.id eq id }) {
+                it[InvoiceTable.status] = status.name
+            }
         }
     }
 
     fun makeInvoiceAsRetryable(id: Int): Int {
-        return InvoiceTable.update({ InvoiceTable.id eq id }) {
-            with(SqlExpressionBuilder) {
-                it.update(retryCount, retryCount + 1)
-                it[status] = InvoiceStatus.PENDING.name
+        return transaction(db) {
+            InvoiceTable.update({ InvoiceTable.id eq id }) {
+                with(SqlExpressionBuilder) {
+                    it.update(retryCount, retryCount + 1)
+                    it[status] = InvoiceStatus.PENDING.name
+                }
             }
         }
     }

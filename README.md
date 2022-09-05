@@ -130,3 +130,5 @@ Also added a retry logic, where for a given exception, such as a network error, 
 - Another optimisation could be to do a bulk update of the invoices in the database instead of updating them one by one.
 
 **Time spent**: Sadly didn't have as much time as I wanted to work on this, but I think I spent around 6 hours on this on Sunday, and a bit on Monday cleaning things up a bit and finishing writing the readme update.
+
+Overall was an interesting challenge and got to play a little with some libraries/frameworks that I haven't used before, such as Exposed and Javalin.

@@ -53,7 +53,7 @@ class BillingService(
                     invoiceService.markInvoiceAsFailed(invoice.id)
                 }
             } catch (e: CurrencyMismatchException) {
-                logger.error(e) { "Invoice doesn't have the same currency as the one expected by the payment provider" }
+                logger.error(e) { "Invoice doesn't have the same currency as the one expected by the payment provider for invoice ${invoice.id}" }
                 invoiceService.markInvoiceAsFailed(invoice.id)
             } catch (e: CustomerNotFoundException) {
                 logger.error(e) { "Customer not found for invoice ${invoice.id}" }
