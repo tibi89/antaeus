@@ -18,7 +18,7 @@ class BillingServiceTest {
     private val paymentProvider = mockk<PaymentProvider>()
     private val invoiceService = mockk<InvoiceService>(relaxed = true)
 
-    private val billingService = BillingService(paymentProvider, Currency.EUR, invoiceService)
+    private val billingService = BillingService(paymentProvider, invoiceService)
 
     @Test
     fun `mark invoice as paid`() {
@@ -37,7 +37,7 @@ class BillingServiceTest {
                 )
             )
 
-        billingService.runningBillingForProvider()
+        billingService.runningBillingForProvider(Currency.EUR)
 
         verify(exactly = 1) { invoiceService.markInvoiceAsPaid(eq(1)) }
     }
@@ -59,7 +59,7 @@ class BillingServiceTest {
                 )
             )
 
-        billingService.runningBillingForProvider()
+        billingService.runningBillingForProvider(Currency.EUR)
 
         verify(exactly = 1) { invoiceService.markInvoiceAsFailed(eq(1)) }
     }
@@ -94,7 +94,7 @@ class BillingServiceTest {
                 failInvoice
             )
 
-        billingService.runningBillingForProvider()
+        billingService.runningBillingForProvider(Currency.EUR)
 
         verify(exactly = 1) { invoiceService.markInvoiceAsFailed(eq(2)) }
         verify(exactly = 1) { invoiceService.markInvoiceAsPaid(eq(1)) }
@@ -117,7 +117,7 @@ class BillingServiceTest {
                 )
             )
 
-        billingService.runningBillingForProvider()
+        billingService.runningBillingForProvider(Currency.EUR)
 
         verify(exactly = 1) { invoiceService.markInvoiceAsFailed(eq(1)) }
     }
@@ -139,7 +139,7 @@ class BillingServiceTest {
                 )
             )
 
-        billingService.runningBillingForProvider()
+        billingService.runningBillingForProvider(Currency.EUR)
 
         verify(exactly = 1) { invoiceService.markInvoiceAsFailed(eq(1)) }
     }
@@ -161,7 +161,7 @@ class BillingServiceTest {
                 )
             )
 
-        billingService.runningBillingForProvider()
+        billingService.runningBillingForProvider(Currency.EUR)
 
         verify(exactly = 1) { invoiceService.markInvoiceAsRetryable(eq(1)) }
     }

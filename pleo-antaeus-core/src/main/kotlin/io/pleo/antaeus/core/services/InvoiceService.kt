@@ -30,5 +30,5 @@ class InvoiceService(private val dal: AntaeusDal) {
         dal.updateStatusOfInvoice(id, InvoiceStatus.FAILED)
 
     fun markInvoiceAsRetryable(id: Int) =
-        dal.updateStatusOfInvoice(id, InvoiceStatus.PENDING)
+        dal.makeInvoiceAsRetryable(id)
 }

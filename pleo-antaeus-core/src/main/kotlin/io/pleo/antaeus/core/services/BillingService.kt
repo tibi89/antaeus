@@ -16,22 +16,26 @@ import mu.KotlinLogging
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
-    val currency: Currency,
     private val invoiceService: InvoiceService
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun runningBillingForProvider() {
+    fun runningBillingForProvider(currency: Currency) {
         runBlocking {
             // fixme: this should be done in a transaction, as we're reading invoices and then updating them
             // using flatmapmerge to run the payment in parallel up to the concurrency level
             logger.info { "Starting billing for $currency" }
-            invoiceService.fetchPendingInvoicesByCurrency(currency).asFlow().flatMapMerge(concurrency = 5) {
-                flow {
-                    processInvoice(it)
-                    emit(it)
+            invoiceService.fetchPendingInvoicesByCurrency(currency)
+                .let {
+                    logger.debug { "Found ${it.size} pending invoices to be billed for $currency" }
+                    it
                 }
-            }
+                .asFlow().flatMapMerge(concurrency = 5) {
+                    flow {
+                        processInvoice(it)
+                        emit(it)
+                    }
+                }
                 .collect()
             logger.info { "Finished billing for $currency" }
         }

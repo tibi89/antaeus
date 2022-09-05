@@ -39,7 +39,7 @@ class InvoiceBillingScheduler(
             return
         }
         try {
-            billingService.runningBillingForProvider()
+            billingService.runningBillingForProvider(currency)
         } catch (e: Exception) {
             logger.error(e) { "Error while running billing for ${currency.name}" }
         }
